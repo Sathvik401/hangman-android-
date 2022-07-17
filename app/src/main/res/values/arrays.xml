@@ -44,6 +44,7 @@
     </string-array>
 
     <string-array name="Status">
+        <item>hangman0</item>
         <item>hangman1</item>
         <item>hangman2</item>
         <item>hangman3</item>

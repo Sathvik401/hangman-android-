@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.example.hangmangame.databinding.ActivityGameBinding;
 
+import java.util.Locale;
 import java.util.Random;
 
 public class GameActivity extends AppCompatActivity {
@@ -26,6 +27,7 @@ public class GameActivity extends AppCompatActivity {
         binding = ActivityGameBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         Resources res = getResources();
+        binding.userInput.setVisibility(View.INVISIBLE);
         Status = res.getStringArray(R.array.Status);
         words = res.getStringArray(R.array.words);
         rand = new Random();
@@ -33,14 +35,28 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 if(keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
-                    if(validateInput()){
-                        String curr_char = binding.userInput.getText().toString();
+                    if(validateInput()) {
+                        String curr_char = binding.userInput.getText().toString().toUpperCase();
                         Toast.makeText(GameActivity.this, curr_char, Toast.LENGTH_SHORT).show();
                         if(check_char(curr_char)) {
-                            Toast.makeText(GameActivity.this, "You guessed it right!!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(GameActivity.this, "You guessed it right :)", Toast.LENGTH_SHORT).show();
+                            binding.space.setText(cur_word);
+                            if(cur_word.equals(gen_word)) {
+                                binding.resultTxt.setTextColor(res.getColor(R.color.green));
+                                binding.resultTxt.setText("You Won!!");
+                                binding.userInput.setVisibility(View.INVISIBLE);
+                                binding.wordBtn.setEnabled(true);
+                            }
                         }
                         else {
+                            Toast.makeText(GameActivity.this, "Wrong Guess :(", Toast.LENGTH_SHORT).show();
                             Status_num++;
+                            if(Status_num == 6) {
+                                binding.userInput.setVisibility(View.INVISIBLE);
+                                binding.resultTxt.setTextColor(res.getColor(R.color.red));
+                                binding.resultTxt.setText("You Lost!!");
+                                binding.wordBtn.setEnabled(true);
+                            }
                             String x = Status[Status_num];
                             ImageView iv= (ImageView)findViewById(R.id.hangman_img);
                             iv.setImageResource(getResources().getIdentifier(x, "drawable", getPackageName()));
@@ -54,6 +70,13 @@ public class GameActivity extends AppCompatActivity {
         binding.wordBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                binding.wordBtn.setEnabled(false);
+                binding.userInput.setVisibility(View.VISIBLE);
+                Status_num = 0;
+                String x = Status[Status_num];
+                ImageView iv= (ImageView)findViewById(R.id.hangman_img);
+                iv.setImageResource(getResources().getIdentifier(x, "drawable", getPackageName()));
+                binding.space.setText("");
                 cur_word="";
                 gen_word = words[rand.nextInt(words.length)];
                 Toast.makeText(getBaseContext(), gen_word, Toast.LENGTH_SHORT).show();
@@ -83,13 +106,15 @@ public class GameActivity extends AppCompatActivity {
 
     public boolean check_char(String s) {
         boolean flag = false;
+        StringBuilder pos= new StringBuilder(cur_word);;
         for(int i=0;i<gen_word.length();i++) {
             if(gen_word.charAt(i) == s.charAt(0)) {
-                StringBuilder pos = new StringBuilder(cur_word);
                 pos.setCharAt(i,s.charAt(0));
                 flag = true;
             }
         }
+        cur_word = pos.toString();
+        binding.userInput.setText("");
         if(flag==true)
             return true;
         return false;
